@@ -1,0 +1,3 @@
+[submodule "parlai_internal"]
+	path = parlai_internal
+	url = https://github.com/liulaisusan/parlai_internal.git
