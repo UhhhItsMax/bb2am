@@ -294,3 +294,22 @@ python -m parlai interactive --model projects.bb2am.agents.blenderbot2:BlenderBo
 1. Create launch.json with vscode tool, choose Module (not python)
 2. In launch.json need to define `args`, see this [example](.vscode/launch.json)
 3. Before debug, make sure already set up the correct intepreter with <kbd>command</kbd>+<kbd>shift</kbd>+<kbd>p</kbd>
+   
+## 10.08.2023 - 11.08.2023
+### TODO
+- [x] Add hybridsummarizer in project `bb2am`
+- [x] Try out summarizer with model `philschmid/bart-large-cnn-samsum`
+- [x] Try out summarizer with model `philschmid/flan-t5-base-samsum`
+
+### Modify memory decoder
+See this [commit](https://github.com/facebookresearch/ParlAI/commit/f14d383f784646b28ff575c0cc9630949a03488d)
+
+### Results
+The tryout example see this [doc](https://docs.google.com/document/d/15VTba7NdBMtr73RjLRNOhK85vXCH5nEAYJbJQB-c4m8/edit)
+
+| Model           | With Augmented Memory | Trained            | Can answer "Why did I move to Berlin"? |
+| --------------- | --------------------- | ------------------ | -------------------------------------- |
+| Trained BB2AM   | :white_check_mark:    | :white_check_mark: | :white_check_mark:                     |
+| Trained BB2     | :x:                   | :white_check_mark: | :x:                                    |
+| Untrained BB2AM | :white_check_mark:    | :x:                | :x:                                    |
+| Untrained BB2   | :x:                   | :white_check_mark: | :x:                                    |
