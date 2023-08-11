@@ -25,6 +25,12 @@ from parlai.core.torch_agent import TorchAgent
 from parlai.tasks.msc.agents import NOPERSONA
 import parlai.utils.logging as logging
 
+###### Importing for Summarizer ######
+import nltk
+from .summarizer import GusumSummarizer, HybridSummarizer, ModelSummarizer
+from .sentenceRanker import SentenceRanker
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+
 
 # The below are the classification outputs mapping to either
 # retrieving from memory, or not retrieving at all.
@@ -305,6 +311,22 @@ class MemoryDecoder(BB2SubmoduleMixin):
             ]
             self.agent_dict = self.agents[0].build_dictionary()
             logging.enable()
+            #### adding for summarizer ####
+            nltk.download('punkt')
+            nltk.download('stopwords')
+            nltk.download('averaged_perceptron_tagger')
+            device = 'cuda' if torch.cuda.is_available() else 'cpu' # 'cuda' or 'cpu'
+            # tokenizer = AutoTokenizer.from_pretrained("philschmid/bart-large-cnn-samsum")
+            # model_summarizer = AutoModelForSeq2SeqLM.from_pretrained("philschmid/bart-large-cnn-samsum").to(device)
+
+            tokenizer = AutoTokenizer.from_pretrained("philschmid/flan-t5-base-samsum")
+            model_summarizer = AutoModelForSeq2SeqLM.from_pretrained("philschmid/flan-t5-base-samsum").to(device)
+            model_summarizer.eval()
+            ranker = SentenceRanker()
+            featurelist = ['sentencePosition', 'sentenceLength', 'properNoun', 'numericalToken']
+            gusumSummarizer = GusumSummarizer(name='gusum', processed= False, ranker=ranker, featureList=featurelist)
+            self.hybridSummarizer = HybridSummarizer(name ='hybrid', device = device, model = model_summarizer, tokenizer = tokenizer, gusumSummarizer = gusumSummarizer)
+            logging.debug("Summarizer loaded")
 
     def generate_memories(
         self, input: torch.LongTensor, num_inputs: torch.LongTensor
@@ -331,13 +353,16 @@ class MemoryDecoder(BB2SubmoduleMixin):
             context_lines_vec = input_i[: num_inputs[idx]]
             context_lines = [
                 self.agent_dict.vec2txt(self.clean_input(j)) for j in context_lines_vec
-            ]
-            raw_memories_i = list(reversed(self._batch_generate(context_lines)))
+            ] # context_lines is a list of strings
+            raw_memories_i = list(reversed(self._batch_generate(context_lines))) # pass string to memory decoder and get persona memory
             logging.debug(f'raw memories: {raw_memories_i}')
-            memories_i = self._extract_from_raw_memories(raw_memories_i)
+            memories_i = self._extract_from_raw_memories(raw_memories_i) # adding prefix to persona memories
             logging.debug(f'memories to write: {memories_i}')
             mem_string = '\n'.join(memories_i)
             logging.verbose(f'Writing memories: {mem_string}')
+            summary = self.hybridSummarizer.summarize(context_lines)
+            logging.debug(f'Summary: {summary}')
+            memories_i.append(f'partner\'s persona: {summary}')
             memories.append(memories_i)
 
         self.memories_full_list = memories
