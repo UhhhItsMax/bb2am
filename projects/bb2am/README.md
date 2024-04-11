@@ -1,3 +1,17 @@
+## Command to interact with the model
+```bash
+python -m parlai interactive --model projects.bb2am.agents.blenderbot2:BlenderBot2FidAgent \
+--model-file zoo:blenderbot2/blenderbot2_400M/model --search_server 0.0.0.0:8080 --loglevel debug
+```
+In another terminal, run the following command to start the search server
+```bash
+python search_server.py serve --host 0.0.0.0:8080
+```
+
+## Colab Notebook
+- For training: https://colab.research.google.com/drive/1GVfMgMrWhc_CD1j06hdL-sckLpnxb0i6?usp=sharing
+- For evaluating: https://colab.research.google.com/drive/1RiyND5cwmd6MPsNtyuX1e2SrdSuyCABV?usp=sharing
+
 ## BlenderBot 2.0: An open source chatbot that builds long-term memory and searches the internet
 
 - A chatbot with its own long-term memory and the ability to access the internet. It outperforms existing models in terms of longer conversations over multiple sessions and is more knowledgeable and has more factual consistency, according to human evaluators.
